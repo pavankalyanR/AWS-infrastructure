@@ -1,0 +1,41 @@
+pipeline{
+    agent any
+    environment{
+        AWS_ACS_KEY = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SEC_KEY = credentials('AWS_SECRET_KEY')
+        INSTANCE_TYPE_APWP = "${Instance_Type_for_Apache_PHP_Wordpress}"
+        INSTANCE_TYPE_MYSQL = "${Instance_Type_for_MySQL_Database}"
+        VPC_CIDR = "${CIDR_for_VPC}"
+        PBSUBNET_CIDR = "${CIDR_for_PublicSubnet}"
+        PRSUBNET_CIDR = "${CIDR_for_PrivateSubnet}"
+        ASGGRP_NAME = "${AutoScalingGroup_Name}"
+        
+    }
+    tools {
+           terraform 'terraform'
+          }
+    stages{
+        stage('Git Checkout')
+        {
+            steps
+            {
+                git 'https://github.com/pavankalyanR/Jenkins-terraform.git'
+            }
+        }
+        stage('Terraform Init')
+        {
+            steps
+            {
+                sh 'terraform init'
+            }
+        }
+         stage('Terraform Apply')
+        {
+            steps
+            {
+                sh 'terraform apply --auto-approve -var "ACSKEY=$AWS_ACS_KEY" -var "SKEY=$AWS_SEC_KEY" -var "ASGname=$ASGGRP_NAME" -var "vpcCIDR=$VPC_CIDR" -var "Instance_Type_APWP=$INSTANCE_TYPE_APWP" -var "Instance_Type_DB=$Instance_Type_for_MySQL_Database" -var "CIDR_Pub_Subnet=$CIDR_for_PublicSubnet" -var "CIDR_Pr_Subnet=$CIDR_for_PrivateSubnet"'
+            }
+        }
+    }      
+
+}
